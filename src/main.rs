@@ -1,7 +1,10 @@
+mod map;
+
 use std::cmp::{max, min};
 
 use bevy_ecs::prelude::*;
 use bracket_lib::prelude::*;
+use map::Map;
 
 #[derive(Component, Debug)]
 struct Player;
@@ -29,14 +32,18 @@ impl Renderable {
     }
 }
 
-#[derive(Component)]
-struct LeftMover;
-
 fn try_move_player(delta_x: i32, delta_y: i32, world: &mut World) {
-    for (_player, mut pos) in world.query::<(&Player, &mut Position)>().iter_mut(world) {
-        pos.x = min(79, max(0, pos.x + delta_x));
-        pos.y = min(49, max(0, pos.y + delta_y));
-    }
+    world.resource_scope(|world: &mut World, map: Mut<Map>| {
+        for (mut pos, _) in world
+            .query::<(&mut Position, With<Player>)>()
+            .iter_mut(world)
+        {
+            if map.is_accessible(pos.x + delta_x, pos.y + delta_y) {
+                pos.x = min(79, max(0, pos.x + delta_x));
+                pos.y = min(49, max(0, pos.y + delta_y));
+            }
+        }
+    })
 }
 
 fn player_input(gs: &mut State, ctx: &mut BTerm) {
@@ -46,15 +53,6 @@ fn player_input(gs: &mut State, ctx: &mut BTerm) {
         Some(VirtualKeyCode::Up) => try_move_player(0, -1, &mut gs.world),
         Some(VirtualKeyCode::Down) => try_move_player(0, 1, &mut gs.world),
         _ => {}
-    }
-}
-
-fn move_left(mut query: Query<(&mut Position, &LeftMover)>) {
-    for (mut pos, _) in &mut query {
-        pos.x -= 1;
-        if pos.x < 0 {
-            pos.x = 79;
-        }
     }
 }
 
@@ -70,6 +68,8 @@ impl GameState for State {
         player_input(self, ctx);
         self.schedule.run(&mut self.world);
 
+        self.world.resource::<Map>().draw(ctx);
+
         let mut query = self.world.query::<(&Position, &Renderable)>();
 
         for (pos, render) in query.iter(&self.world) {
@@ -81,6 +81,7 @@ impl GameState for State {
 fn main() -> BError {
     let bterm = BTermBuilder::simple80x50()
         .with_title("rglk - a roguelike")
+        .with_fps_cap(60f32)
         .build()?;
 
     let mut gs = State {
@@ -88,22 +89,15 @@ fn main() -> BError {
         schedule: Schedule::default(),
     };
 
-    gs.schedule
-        .add_stage("update", SystemStage::parallel().with_system(move_left));
+    gs.schedule.add_stage("update", SystemStage::parallel());
+
+    gs.world.insert_resource(Map::new());
 
     gs.world
         .spawn()
         .insert(Player)
         .insert(Position { x: 40, y: 25 })
         .insert(Renderable::new('@', YELLOW, BLACK));
-
-    for i in 0..10 {
-        gs.world
-            .spawn()
-            .insert(Position { x: i * 7, y: 20 })
-            .insert(Renderable::new('☺', RED, BLACK))
-            .insert(LeftMover);
-    }
 
     main_loop(bterm, gs)
 }
