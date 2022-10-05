@@ -1,62 +1,18 @@
+mod components;
 mod map;
-
-use std::cmp::{max, min};
+mod player;
+mod rect;
+mod systems;
 
 use bevy_ecs::prelude::*;
 use bracket_lib::prelude::*;
-use map::Map;
+use components::Viewshed;
+use map::{Map, TileType};
+use player::player_input;
 
-#[derive(Component, Debug)]
-struct Player;
+use crate::components::{Player, Position, Renderable};
 
-#[derive(Component)]
-struct Position {
-    x: i32,
-    y: i32,
-}
-
-#[derive(Component)]
-struct Renderable {
-    glyph: FontCharType,
-    fg: RGB,
-    bg: RGB,
-}
-
-impl Renderable {
-    pub fn new(glyph: char, fg: (u8, u8, u8), bg: (u8, u8, u8)) -> Self {
-        Self {
-            glyph: to_cp437(glyph),
-            fg: RGB::named(fg),
-            bg: RGB::named(bg),
-        }
-    }
-}
-
-fn try_move_player(delta_x: i32, delta_y: i32, world: &mut World) {
-    world.resource_scope(|world: &mut World, map: Mut<Map>| {
-        for (mut pos, _) in world
-            .query::<(&mut Position, With<Player>)>()
-            .iter_mut(world)
-        {
-            if map.is_accessible(pos.x + delta_x, pos.y + delta_y) {
-                pos.x = min(79, max(0, pos.x + delta_x));
-                pos.y = min(49, max(0, pos.y + delta_y));
-            }
-        }
-    })
-}
-
-fn player_input(gs: &mut State, ctx: &mut BTerm) {
-    match ctx.key {
-        Some(VirtualKeyCode::Left) => try_move_player(-1, 0, &mut gs.world),
-        Some(VirtualKeyCode::Right) => try_move_player(1, 0, &mut gs.world),
-        Some(VirtualKeyCode::Up) => try_move_player(0, -1, &mut gs.world),
-        Some(VirtualKeyCode::Down) => try_move_player(0, 1, &mut gs.world),
-        _ => {}
-    }
-}
-
-struct State {
+pub struct State {
     world: World,
     schedule: Schedule,
 }
@@ -68,7 +24,7 @@ impl GameState for State {
         player_input(self, ctx);
         self.schedule.run(&mut self.world);
 
-        self.world.resource::<Map>().draw(ctx);
+        draw_map(&mut self.world, ctx);
 
         let mut query = self.world.query::<(&Position, &Renderable)>();
 
@@ -76,6 +32,34 @@ impl GameState for State {
             ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
         }
     }
+}
+
+fn draw_map(world: &mut World, ctx: &mut BTerm) {
+    world.resource_scope(|world, map: Mut<Map>| {
+        for (_player, viewshed) in world.query::<(With<Player>, &Viewshed)>().iter(&world) {
+            let mut x = 0;
+            let mut y = 0;
+
+            for tile in map.tiles.iter() {
+                if viewshed.visible_tiles.contains(&Point::new(x, y)) {
+                    match tile {
+                        TileType::Floor => {
+                            ctx.set(x, y, RGB::named(WEBGREY), RGB::named(BLACK), to_cp437('.'))
+                        }
+                        TileType::Wall => {
+                            ctx.set(x, y, RGB::named(GREEN), RGB::named(BLACK), to_cp437('#'))
+                        }
+                    }
+                }
+
+                x += 1;
+                if x > 79 {
+                    x = 0;
+                    y += 1;
+                }
+            }
+        }
+    })
 }
 
 fn main() -> BError {
@@ -89,15 +73,28 @@ fn main() -> BError {
         schedule: Schedule::default(),
     };
 
-    gs.schedule.add_stage("update", SystemStage::parallel());
+    gs.schedule.add_stage(
+        "update",
+        SystemStage::parallel().with_system(systems::visibility),
+    );
 
-    gs.world.insert_resource(Map::new());
+    let map = Map::new_rooms_and_corridors();
+    let (player_x, player_y) = map.rooms[0].center();
+
+    gs.world.insert_resource(map);
 
     gs.world
         .spawn()
         .insert(Player)
-        .insert(Position { x: 40, y: 25 })
-        .insert(Renderable::new('@', YELLOW, BLACK));
+        .insert(Position {
+            x: player_x,
+            y: player_y,
+        })
+        .insert(Renderable::new('@', YELLOW, BLACK))
+        .insert(Viewshed {
+            visible_tiles: Vec::new(),
+            range: 8,
+        });
 
     main_loop(bterm, gs)
 }
