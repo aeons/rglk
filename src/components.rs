@@ -32,3 +32,12 @@ pub struct Viewshed {
     pub visible_tiles: Vec<Point>,
     pub range: i32,
 }
+
+impl Viewshed {
+    pub fn new(range: i32) -> Self {
+        Self {
+            visible_tiles: Vec::new(),
+            range,
+        }
+    }
+}

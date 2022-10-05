@@ -12,7 +12,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, world: &mut World) {
             .query::<(&mut Position, With<Player>)>()
             .iter_mut(world)
         {
-            if !map.is_walkable(pos.x + delta_x, pos.y + delta_y) {
+            if map.is_walkable(pos.x + delta_x, pos.y + delta_y) {
                 pos.x = min(79, max(0, pos.x + delta_x));
                 pos.y = min(49, max(0, pos.y + delta_y));
             }

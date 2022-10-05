@@ -7,7 +7,7 @@ mod systems;
 use bevy_ecs::prelude::*;
 use bracket_lib::prelude::*;
 use components::Viewshed;
-use map::{Map, TileType};
+use map::{draw_map, Map};
 use player::player_input;
 
 use crate::components::{Player, Position, Renderable};
@@ -26,40 +26,15 @@ impl GameState for State {
 
         draw_map(&mut self.world, ctx);
 
-        let mut query = self.world.query::<(&Position, &Renderable)>();
-
-        for (pos, render) in query.iter(&self.world) {
-            ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
-        }
-    }
-}
-
-fn draw_map(world: &mut World, ctx: &mut BTerm) {
-    world.resource_scope(|world, map: Mut<Map>| {
-        for (_player, viewshed) in world.query::<(With<Player>, &Viewshed)>().iter(&world) {
-            let mut x = 0;
-            let mut y = 0;
-
-            for tile in map.tiles.iter() {
-                if viewshed.visible_tiles.contains(&Point::new(x, y)) {
-                    match tile {
-                        TileType::Floor => {
-                            ctx.set(x, y, RGB::named(WEBGREY), RGB::named(BLACK), to_cp437('.'))
-                        }
-                        TileType::Wall => {
-                            ctx.set(x, y, RGB::named(GREEN), RGB::named(BLACK), to_cp437('#'))
-                        }
-                    }
-                }
-
-                x += 1;
-                if x > 79 {
-                    x = 0;
-                    y += 1;
+        self.world.resource_scope(|world, map: Mut<Map>| {
+            let mut query = world.query::<(&Position, &Renderable)>();
+            for (pos, render) in query.iter(world) {
+                if map.is_visible(pos.x, pos.y) {
+                    ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
                 }
             }
-        }
-    })
+        })
+    }
 }
 
 fn main() -> BError {
@@ -81,6 +56,19 @@ fn main() -> BError {
     let map = Map::new_rooms_and_corridors();
     let (player_x, player_y) = map.rooms[0].center();
 
+    let mut rng = RandomNumberGenerator::new();
+    for room in map.rooms.iter().skip(1) {
+        let (x, y) = room.center();
+
+        let glyph = rng.random_slice_entry(&['g', 'o']).unwrap();
+
+        gs.world
+            .spawn()
+            .insert(Position { x, y })
+            .insert(Renderable::new(*glyph, RED, BLACK))
+            .insert(Viewshed::new(8));
+    }
+
     gs.world.insert_resource(map);
 
     gs.world
@@ -91,10 +79,7 @@ fn main() -> BError {
             y: player_y,
         })
         .insert(Renderable::new('@', YELLOW, BLACK))
-        .insert(Viewshed {
-            visible_tiles: Vec::new(),
-            range: 8,
-        });
+        .insert(Viewshed::new(8));
 
     main_loop(bterm, gs)
 }
