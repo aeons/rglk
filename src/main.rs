@@ -6,7 +6,7 @@ mod systems;
 
 use bevy_ecs::prelude::*;
 use bracket_lib::prelude::*;
-use components::Viewshed;
+use components::{Viewshed, Monster};
 use map::{draw_map, Map};
 use player::player_input;
 
@@ -64,6 +64,7 @@ fn main() -> BError {
 
         gs.world
             .spawn()
+            .insert(Monster)
             .insert(Position { x, y })
             .insert(Renderable::new(*glyph, RED, BLACK))
             .insert(Viewshed::new(8));

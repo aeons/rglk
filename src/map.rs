@@ -3,8 +3,6 @@ use std::cmp::{max, min};
 use bevy_ecs::prelude::*;
 use bracket_lib::prelude::*;
 
-use crate::rect::Rect;
-
 #[derive(PartialEq, Copy, Clone)]
 pub enum TileType {
     Wall,

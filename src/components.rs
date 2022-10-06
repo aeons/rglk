@@ -1,8 +1,11 @@
 use bevy_ecs::prelude::*;
 use bracket_lib::prelude::*;
 
-#[derive(Component, Debug)]
+#[derive(Component)]
 pub struct Player;
+
+#[derive(Component)]
+pub struct Monster;
 
 #[derive(Component)]
 pub struct Position {
