@@ -5,24 +5,37 @@ mod rect;
 mod systems;
 
 use bevy_ecs::prelude::*;
+use bevy_ecs::system::SystemState;
 use bracket_lib::prelude::*;
-use components::{Viewshed, Monster};
+use components::{Monster, Viewshed};
 use map::{draw_map, Map};
 use player::player_input;
 
 use crate::components::{Player, Position, Renderable};
 
+#[derive(PartialEq, Copy, Clone)]
+pub enum RunState {
+    Paused,
+    Running,
+}
+
 pub struct State {
-    world: World,
-    schedule: Schedule,
+    pub world: World,
+    pub schedule: Schedule,
+    pub runstate: RunState,
 }
 
 impl GameState for State {
     fn tick(&mut self, ctx: &mut BTerm) {
         ctx.cls();
 
-        player_input(self, ctx);
-        self.schedule.run(&mut self.world);
+        match self.runstate {
+            RunState::Paused => self.runstate = player_input(self, ctx),
+            RunState::Running => {
+                self.schedule.run(&mut self.world);
+                self.runstate = RunState::Paused
+            }
+        }
 
         draw_map(&mut self.world, ctx);
 
@@ -37,6 +50,14 @@ impl GameState for State {
     }
 }
 
+pub struct MovePlayerState<'w, 's> {
+    state: SystemState<(
+        ResMut<'w, Map>,
+        ResMut<'w, Point>,
+        Query<'w, 's, &'static mut Position, With<Player>>,
+    )>,
+}
+
 fn main() -> BError {
     let bterm = BTermBuilder::simple80x50()
         .with_title("rglk - a roguelike")
@@ -46,11 +67,14 @@ fn main() -> BError {
     let mut gs = State {
         world: World::new(),
         schedule: Schedule::default(),
+        runstate: RunState::Running,
     };
 
     gs.schedule.add_stage(
         "update",
-        SystemStage::parallel().with_system(systems::visibility),
+        SystemStage::parallel()
+            .with_system(systems::visibility)
+            .with_system(systems::monster_ai),
     );
 
     let map = Map::new_rooms_and_corridors();
@@ -71,6 +95,16 @@ fn main() -> BError {
     }
 
     gs.world.insert_resource(map);
+    gs.world.insert_resource(Point::new(player_x, player_y));
+
+    let map_and_player_position: SystemState<(
+        ResMut<Map>,
+        ResMut<Point>,
+        Query<&mut Position, With<Player>>,
+    )> = SystemState::new(&mut gs.world);
+    gs.world.insert_resource(MovePlayerState {
+        state: map_and_player_position,
+    });
 
     gs.world
         .spawn()

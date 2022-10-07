@@ -3,8 +3,10 @@ use bracket_lib::prelude::*;
 
 use crate::components::{Monster, Position, Viewshed};
 
-pub fn monster_ai(query: Query<(&Viewshed, &Position), With<Monster>>) {
+pub fn monster_ai(player_pos: Res<Point>, query: Query<(&Viewshed, &Position), With<Monster>>) {
     for (viewshed, pos) in &query {
-        console::log("Monster considers their own existence");
+        if viewshed.visible_tiles.contains(&*&player_pos) {
+            console::log("Monster considers their own existence");
+        }
     }
 }
