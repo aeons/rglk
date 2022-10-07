@@ -1,6 +1,7 @@
 use std::cmp::{max, min};
 
 use bevy_ecs::prelude::*;
+use bit_set::BitSet;
 use bracket_lib::prelude::*;
 
 use crate::rect::Rect;
@@ -16,8 +17,10 @@ pub struct Map {
     pub rooms: Vec<Rect>,
     pub width: i32,
     pub height: i32,
-    pub revealed_tiles: Vec<bool>,
-    pub visible_tiles: Vec<bool>,
+    pub revealed_tiles: BitSet,
+    pub visible_tiles: BitSet,
+    pub blocked_tiles: BitSet,
+    pub tile_content: Vec<Vec<Entity>>,
 }
 
 impl Map {
@@ -27,8 +30,10 @@ impl Map {
             rooms: Vec::new(),
             width: 80,
             height: 50,
-            revealed_tiles: vec![false; 80 * 50],
-            visible_tiles: vec![false; 80 * 50],
+            revealed_tiles: BitSet::new(),
+            visible_tiles: BitSet::new(),
+            blocked_tiles: BitSet::new(),
+            tile_content: vec![Vec::new(); 80 * 50],
         };
 
         const MAX_ROOMS: i32 = 30;
@@ -40,8 +45,8 @@ impl Map {
         for _ in 0..MAX_ROOMS {
             let w = rng.range(MIN_SIZE, MAX_SIZE);
             let h = rng.range(MIN_SIZE, MAX_SIZE);
-            let x = rng.range(0, 80 - w - 2);
-            let y = rng.range(0, 50 - h - 2);
+            let x = rng.range(0, map.width - w - 2);
+            let y = rng.range(0, map.height - h - 2);
 
             let new_room = Rect::new(x, y, w, h);
 
@@ -72,18 +77,27 @@ impl Map {
         map
     }
 
+    pub fn xy_idx(&self, x: i32, y: i32) -> usize {
+        (y as usize * self.width as usize) + x as usize
+    }
+
+    pub fn idx_xy(&self, idx: usize) -> (i32, i32) {
+        (idx as i32 % self.width, idx as i32 / self.width)
+    }
+
     fn add_room(&mut self, room: &Rect) {
         for y in room.y1 + 1..=room.y2 {
             for x in room.x1 + 1..=room.x2 {
-                self.tiles[xy_idx(x, y)] = TileType::Floor;
+                let idx = self.xy_idx(x, y);
+                self.tiles[idx] = TileType::Floor;
             }
         }
     }
 
     fn add_horizontal_tunnel(&mut self, x1: i32, x2: i32, y: i32) {
         for x in min(x1, x2)..=max(x1, x2) {
-            let idx = xy_idx(x, y);
-            if idx > 0 && idx < 80 * 50 {
+            let idx = self.xy_idx(x, y);
+            if idx > 0 && idx < (self.height * self.width) as usize {
                 self.tiles[idx as usize] = TileType::Floor;
             }
         }
@@ -91,35 +105,94 @@ impl Map {
 
     fn add_vertical_tunnel(&mut self, y1: i32, y2: i32, x: i32) {
         for y in min(y1, y2)..=max(y1, y2) {
-            let idx = xy_idx(x, y);
-            if idx > 0 && idx < 80 * 50 {
+            let idx = self.xy_idx(x, y);
+            if idx > 0 && idx < (self.height * self.width) as usize {
                 self.tiles[idx as usize] = TileType::Floor;
             }
         }
     }
 
+    pub fn populate_blocked(&mut self) {
+        self.blocked_tiles.clear();
+        for (idx, tile) in self.tiles.iter().enumerate() {
+            if *tile == TileType::Wall {
+                self.blocked_tiles.insert(idx);
+            }
+        }
+    }
+
     pub fn reveal_tile(&mut self, x: i32, y: i32) {
-        let idx = xy_idx(x, y);
-        self.revealed_tiles[idx] = true;
-        self.visible_tiles[idx] = true;
+        let idx = self.xy_idx(x, y);
+        self.revealed_tiles.insert(idx);
+        self.visible_tiles.insert(idx);
     }
 
     pub fn is_visible(&self, x: i32, y: i32) -> bool {
-        self.revealed_tiles[xy_idx(x, y)]
+        self.revealed_tiles.contains(self.xy_idx(x, y))
     }
 
-    pub fn is_walkable(&self, x: i32, y: i32) -> bool {
-        self.tiles[xy_idx(x, y)] != TileType::Wall
+    pub fn is_valid_exit(&self, x: i32, y: i32) -> bool {
+        x > 0 && x < self.width && y > 0 && y < self.height && {
+            let idx = self.xy_idx(x, y);
+            !self.blocked_tiles.contains(idx)
+        }
     }
-}
 
-fn xy_idx(x: i32, y: i32) -> usize {
-    (y as usize * 80) + x as usize
+    pub fn clear_content_index(&mut self) {
+        for tile in self.tile_content.iter_mut() {
+            tile.clear()
+        }
+    }
 }
 
 impl BaseMap for Map {
     fn is_opaque(&self, idx: usize) -> bool {
         self.tiles[idx] == TileType::Wall
+    }
+
+    fn get_available_exits(&self, idx: usize) -> SmallVec<[(usize, f32); 10]> {
+        let mut exits = SmallVec::new();
+        let (x, y) = self.idx_xy(idx);
+        let w = self.width as usize;
+
+        // Cardinal directions
+        if self.is_valid_exit(x - 1, y) {
+            exits.push((idx - 1, 1.0))
+        };
+        if self.is_valid_exit(x + 1, y) {
+            exits.push((idx + 1, 1.0))
+        };
+        if self.is_valid_exit(x, y - 1) {
+            exits.push((idx - w, 1.0))
+        };
+        if self.is_valid_exit(x, y + 1) {
+            exits.push((idx + w, 1.0))
+        };
+
+        // Diagonals
+        if self.is_valid_exit(x - 1, y - 1) {
+            exits.push((idx - w - 1, 1.0))
+        };
+        if self.is_valid_exit(x + 1, y - 1) {
+            exits.push((idx - w + 1, 1.0))
+        };
+        if self.is_valid_exit(x - 1, y + 1) {
+            exits.push((idx + w - 1, 1.0))
+        };
+        if self.is_valid_exit(x + 1, y + 1) {
+            exits.push((idx + w + 1, 1.0))
+        };
+
+        exits
+    }
+
+    fn get_pathing_distance(&self, idx1: usize, idx2: usize) -> f32 {
+        let (x1, y1) = self.idx_xy(idx1);
+        let p1 = Point::new(x1, y1);
+        let (x2, y2) = self.idx_xy(idx2);
+        let p2 = Point::new(x2, y2);
+
+        DistanceAlg::Pythagoras.distance2d(p1, p2)
     }
 }
 
@@ -135,13 +208,13 @@ pub fn draw_map(world: &mut World, ctx: &mut BTerm) {
     let mut y = 0;
 
     for (idx, tile) in map.tiles.iter().enumerate() {
-        if map.revealed_tiles[idx] {
+        if map.revealed_tiles.contains(idx) {
             let (glyph, mut fg) = match tile {
                 TileType::Floor => (to_cp437('.'), RGB::named(TEAL)),
                 TileType::Wall => (to_cp437('#'), RGB::named(GREEN)),
             };
 
-            if !map.visible_tiles[idx] {
+            if !map.visible_tiles.contains(idx) {
                 fg = fg.to_greyscale()
             }
 

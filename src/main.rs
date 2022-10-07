@@ -7,7 +7,7 @@ mod systems;
 use bevy_ecs::prelude::*;
 use bevy_ecs::system::SystemState;
 use bracket_lib::prelude::*;
-use components::{Monster, Viewshed};
+use components::{BlocksTile, CombatStats, Monster, Name, Viewshed};
 use map::{draw_map, Map};
 use player::player_input;
 
@@ -76,6 +76,10 @@ fn main() -> BError {
             .with_system(systems::visibility)
             .with_system(systems::monster_ai),
     );
+    gs.schedule.add_stage(
+        "after_update",
+        SystemStage::parallel().with_system(systems::map_indexing),
+    );
 
     let map = Map::new_rooms_and_corridors();
     let (player_x, player_y) = map.rooms[0].center();
@@ -84,14 +88,26 @@ fn main() -> BError {
     for room in map.rooms.iter().skip(1) {
         let (x, y) = room.center();
 
-        let glyph = rng.random_slice_entry(&['g', 'o']).unwrap();
+        let (glyph, name) = rng
+            .random_slice_entry(&[('g', "Goblin"), ('o', "Orc")])
+            .unwrap();
 
         gs.world
             .spawn()
             .insert(Monster)
+            .insert(Name {
+                name: name.to_string(),
+            })
             .insert(Position { x, y })
+            .insert(BlocksTile)
             .insert(Renderable::new(*glyph, RED, BLACK))
-            .insert(Viewshed::new(8));
+            .insert(Viewshed::new(8))
+            .insert(CombatStats {
+                max_hp: 16,
+                hp: 16,
+                power: 4,
+                defense: 1,
+            });
     }
 
     gs.world.insert_resource(map);
@@ -109,12 +125,21 @@ fn main() -> BError {
     gs.world
         .spawn()
         .insert(Player)
+        .insert(Name {
+            name: "Player".to_string(),
+        })
         .insert(Position {
             x: player_x,
             y: player_y,
         })
         .insert(Renderable::new('@', YELLOW, BLACK))
-        .insert(Viewshed::new(8));
+        .insert(Viewshed::new(8))
+        .insert(CombatStats {
+            max_hp: 30,
+            hp: 30,
+            power: 5,
+            defense: 2,
+        });
 
     main_loop(bterm, gs)
 }

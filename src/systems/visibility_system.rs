@@ -16,7 +16,7 @@ pub fn visibility(
             .retain(|p| p.x >= 0 && p.x < map.width && p.y >= 0 && p.y < map.height);
 
         if player.is_some() {
-            map.visible_tiles.iter_mut().for_each(|t| *t = false);
+            map.visible_tiles.clear();
             for vis in viewshed.visible_tiles.iter() {
                 map.reveal_tile(vis.x, vis.y);
             }

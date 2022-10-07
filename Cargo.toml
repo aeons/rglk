@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 bevy_ecs = "0.8"
+bit-set = "0.5.3"
 bracket-lib = "0.8"

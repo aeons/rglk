@@ -8,10 +8,18 @@ pub struct Player;
 pub struct Monster;
 
 #[derive(Component)]
+pub struct Name {
+    pub name: String,
+}
+
+#[derive(Component)]
 pub struct Position {
     pub x: i32,
     pub y: i32,
 }
+
+#[derive(Component)]
+pub struct BlocksTile;
 
 #[derive(Component)]
 pub struct Renderable {
@@ -43,4 +51,12 @@ impl Viewshed {
             range,
         }
     }
+}
+
+#[derive(Component)]
+pub struct CombatStats {
+    pub max_hp: i32,
+    pub hp: i32,
+    pub power: i32,
+    pub defense: i32,
 }
