@@ -52,9 +52,11 @@ impl GameState for State {
 
 pub struct MovePlayerState<'w, 's> {
     state: SystemState<(
+        Commands<'w, 's>,
         ResMut<'w, Map>,
         ResMut<'w, Point>,
-        Query<'w, 's, &'static mut Position, With<Player>>,
+        Query<'w, 's, (Entity, &'static mut Position), With<Player>>,
+        Query<'w, 's, &'static CombatStats>,
     )>,
 }
 
@@ -78,7 +80,9 @@ fn main() -> BError {
     );
     gs.schedule.add_stage(
         "after_update",
-        SystemStage::parallel().with_system(systems::map_indexing),
+        SystemStage::parallel()
+            .with_system(systems::melee_combat)
+            .with_system(systems::map_indexing),
     );
 
     let map = Map::new_rooms_and_corridors();
@@ -114,9 +118,11 @@ fn main() -> BError {
     gs.world.insert_resource(Point::new(player_x, player_y));
 
     let map_and_player_position: SystemState<(
+        Commands,
         ResMut<Map>,
         ResMut<Point>,
-        Query<&mut Position, With<Player>>,
+        Query<(Entity, &mut Position), With<Player>>,
+        Query<&CombatStats>,
     )> = SystemState::new(&mut gs.world);
     gs.world.insert_resource(MovePlayerState {
         state: map_and_player_position,

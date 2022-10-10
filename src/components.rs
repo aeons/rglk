@@ -60,3 +60,20 @@ pub struct CombatStats {
     pub power: i32,
     pub defense: i32,
 }
+
+#[derive(Component)]
+pub struct WantsToMelee {
+    pub target: Entity,
+}
+
+
+#[derive(Component)]
+pub struct SufferDamage {
+    pub amount: Vec<i32>
+}
+
+impl SufferDamage {
+    pub fn new() {
+        
+    }
+}
