@@ -1,27 +1,33 @@
 use bevy_ecs::prelude::*;
 use bracket_lib::prelude::*;
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct Player;
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct Monster;
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct Name {
     pub name: String,
 }
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct Position {
     pub x: i32,
     pub y: i32,
 }
 
-#[derive(Component)]
+#[derive(Component, Debug)]
+pub struct Velocity {
+    pub delta_x: i32,
+    pub delta_y: i32,
+}
+
+#[derive(Component, Debug)]
 pub struct BlocksTile;
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct Renderable {
     pub glyph: FontCharType,
     pub fg: RGB,
@@ -38,7 +44,7 @@ impl Renderable {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct Viewshed {
     pub visible_tiles: Vec<Point>,
     pub range: i32,
@@ -53,7 +59,7 @@ impl Viewshed {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct CombatStats {
     pub max_hp: i32,
     pub hp: i32,
@@ -61,19 +67,16 @@ pub struct CombatStats {
     pub defense: i32,
 }
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct WantsToMelee {
     pub target: Entity,
 }
 
-
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct SufferDamage {
-    pub amount: Vec<i32>
+    pub amount: Vec<i32>,
 }
 
 impl SufferDamage {
-    pub fn new() {
-        
-    }
+    pub fn new() {}
 }

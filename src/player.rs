@@ -3,7 +3,7 @@ use std::cmp::{max, min};
 use bevy_ecs::prelude::*;
 use bracket_lib::prelude::*;
 
-use crate::components::WantsToMelee;
+use crate::components::{WantsToMelee};
 use crate::{MovePlayerState, RunState, State};
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, world: &mut World) {
