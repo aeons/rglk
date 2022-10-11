@@ -1,4 +1,4 @@
-use bevy_ecs::prelude::*;
+use bevy::prelude::*;
 
 use crate::components::{BlocksTile, Position};
 use crate::map::Map;

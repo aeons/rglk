@@ -1,18 +1,27 @@
-use bevy_ecs::prelude::*;
-use bracket_lib::prelude::*;
+use bevy::prelude::*;
+use bracket_pathfinding::prelude::*;
+use bracket_terminal::console;
 
-use crate::components::{Monster, Name, Position, Viewshed};
+use crate::components::{Monster, Player, Position, Viewshed};
 use crate::map::Map;
+use crate::RunState;
 
 pub fn monster_ai(
-    player_pos: Res<Point>,
+    run_state: Res<RunState>,
     mut map: ResMut<Map>,
-    mut query: Query<(Entity, &Viewshed, &mut Position, &Name), With<Monster>>,
+    player_pos: Query<&Position, (With<Player>, Without<Monster>)>,
+    mut monsters: Query<(&Viewshed, &mut Position, &Name), With<Monster>>,
 ) {
-    for (entity, viewshed, mut pos, name) in &mut query {
-        let distance = DistanceAlg::Pythagoras.distance2d(Point::new(pos.x, pos.y), *player_pos);
+    if *run_state != RunState::MonsterTurn {
+        return;
+    }
+
+    let player_pos = player_pos.single().as_point();
+
+    for (viewshed, mut pos, name) in &mut monsters {
+        let distance = DistanceAlg::Pythagoras.distance2d(pos.as_point(), player_pos);
         if distance < 1.5 {
-            console::log(format!("{} shouts insults", name.name));
+            console::log(format!("{} shouts insults", name));
             return;
         }
 

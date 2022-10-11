@@ -1,68 +1,37 @@
-use std::cmp::{max, min};
+use bevy::prelude::*;
 
-use bevy_ecs::prelude::*;
-use bracket_lib::prelude::*;
-
-use crate::components::{WantsToMelee};
-use crate::{MovePlayerState, RunState, State};
-
-pub fn try_move_player(delta_x: i32, delta_y: i32, world: &mut World) {
-    world.resource_scope(|mut world, mut mapp: Mut<MovePlayerState>| {
-        let (mut commands, map, mut player_pos, mut query, combat_stats) =
-            mapp.state.get_mut(&mut world);
-
-        for (player, mut pos) in query.iter_mut() {
-            let dst = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
-
-            for potential_target in map.tile_content[dst].iter() {
-                let target = combat_stats.get(*potential_target);
-                if let Ok(_) = target {
-                    commands.entity(player).insert(WantsToMelee {
-                        target: *potential_target,
-                    });
-                    return;
-                }
-            }
-
-            if !map.blocked_tiles.contains(dst) {
-                pos.x = min(map.width - 1, max(0, pos.x + delta_x));
-                pos.y = min(map.height - 1, max(0, pos.y + delta_y));
-
-                player_pos.x = pos.x;
-                player_pos.y = pos.y;
-            }
-        }
-    })
+#[derive(Component)]
+pub enum PlayerInput {
+    Idle,
+    Delta { x: i32, y: i32 },
 }
 
-pub fn player_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
-    match ctx.key {
-        None => return RunState::Paused,
-        Some(key) => match key {
-            VirtualKeyCode::Left | VirtualKeyCode::Numpad4 | VirtualKeyCode::H => {
-                try_move_player(-1, 0, &mut gs.world)
-            }
-            VirtualKeyCode::Right | VirtualKeyCode::Numpad6 | VirtualKeyCode::L => {
-                try_move_player(1, 0, &mut gs.world)
-            }
-            VirtualKeyCode::Up | VirtualKeyCode::Numpad8 | VirtualKeyCode::K => {
-                try_move_player(0, -1, &mut gs.world)
-            }
-            VirtualKeyCode::Down | VirtualKeyCode::Numpad2 | VirtualKeyCode::J => {
-                try_move_player(0, 1, &mut gs.world)
-            }
-
-            // Diagonals
-            VirtualKeyCode::Numpad9 | VirtualKeyCode::Y => try_move_player(-1, -1, &mut gs.world),
-
-            VirtualKeyCode::Numpad7 | VirtualKeyCode::U => try_move_player(1, -1, &mut gs.world),
-
-            VirtualKeyCode::Numpad3 | VirtualKeyCode::N => try_move_player(1, 1, &mut gs.world),
-
-            VirtualKeyCode::Numpad1 | VirtualKeyCode::B => try_move_player(-1, 1, &mut gs.world),
-
-            _ => return RunState::Paused,
-        },
+impl PlayerInput {
+    pub fn delta(x: i32, y: i32) -> Self {
+        Self::Delta { x, y }
     }
-    RunState::Running
+}
+
+pub fn player_input(keyboard: &Input<KeyCode>) -> PlayerInput {
+    // Cardinal directions
+    if keyboard.any_just_pressed([KeyCode::Left, KeyCode::Numpad4, KeyCode::H]) {
+        PlayerInput::delta(-1, 0)
+    } else if keyboard.any_just_pressed([KeyCode::Right, KeyCode::Numpad6, KeyCode::L]) {
+        PlayerInput::delta(1, 0)
+    } else if keyboard.any_just_pressed([KeyCode::Up, KeyCode::Numpad8, KeyCode::K]) {
+        PlayerInput::delta(0, -1)
+    } else if keyboard.any_just_pressed([KeyCode::Down, KeyCode::Numpad2, KeyCode::J]) {
+        PlayerInput::delta(0, 1)
+    } else if keyboard.any_just_pressed([KeyCode::Y, KeyCode::Numpad9]) {
+        // Diagonals
+        PlayerInput::delta(-1, -1)
+    } else if keyboard.any_just_pressed([KeyCode::U, KeyCode::Numpad7]) {
+        PlayerInput::delta(1, -1)
+    } else if keyboard.any_just_pressed([KeyCode::N, KeyCode::Numpad3]) {
+        PlayerInput::delta(1, 1)
+    } else if keyboard.any_just_pressed([KeyCode::B, KeyCode::Numpad1]) {
+        PlayerInput::delta(-1, 1)
+    } else {
+        PlayerInput::Idle
+    }
 }

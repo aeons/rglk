@@ -1,17 +1,19 @@
 use std::cmp::{max, min};
 
-use bevy_ecs::prelude::*;
+use bevy::prelude::*;
 use bit_set::BitSet;
-use bracket_lib::prelude::*;
+use bracket_bevy::prelude::*;
+use bracket_pathfinding::prelude::*;
 
 use crate::rect::Rect;
 
-#[derive(PartialEq, Copy, Clone)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum TileType {
     Wall,
     Floor,
 }
 
+#[derive(Debug)]
 pub struct Map {
     pub tiles: Vec<TileType>,
     pub rooms: Vec<Rect>,
@@ -24,7 +26,7 @@ pub struct Map {
 }
 
 impl Map {
-    pub fn new_rooms_and_corridors() -> Self {
+    pub fn new_rooms_and_corridors(rng: &RandomNumbers) -> Self {
         let mut map = Self {
             tiles: vec![TileType::Wall; 80 * 50],
             rooms: Vec::new(),
@@ -39,8 +41,6 @@ impl Map {
         const MAX_ROOMS: i32 = 30;
         const MIN_SIZE: i32 = 6;
         const MAX_SIZE: i32 = 10;
-
-        let mut rng = RandomNumberGenerator::new();
 
         for _ in 0..MAX_ROOMS {
             let w = rng.range(MIN_SIZE, MAX_SIZE);
@@ -75,6 +75,32 @@ impl Map {
         }
 
         map
+    }
+
+    pub fn draw(&self, ctx: &BracketContext) {
+        let mut x = 0;
+        let mut y = 0;
+
+        for (idx, tile) in self.tiles.iter().enumerate() {
+            if self.revealed_tiles.contains(idx) {
+                let (glyph, mut fg) = match tile {
+                    TileType::Floor => (to_cp437('.'), RGB::named(TEAL)),
+                    TileType::Wall => (to_cp437('#'), RGB::named(GREEN)),
+                };
+
+                if !self.visible_tiles.contains(idx) {
+                    fg = fg.to_greyscale()
+                }
+
+                ctx.set(x, y, fg, RGB::named(BLACK), glyph);
+            }
+
+            x += 1;
+            if x > 79 {
+                x = 0;
+                y += 1;
+            }
+        }
     }
 
     pub fn xy_idx(&self, x: i32, y: i32) -> usize {
@@ -145,6 +171,13 @@ impl Map {
     }
 }
 
+impl FromWorld for Map {
+    fn from_world(world: &mut World) -> Self {
+        let rng = world.resource::<RandomNumbers>();
+        Self::new_rooms_and_corridors(rng)
+    }
+}
+
 impl BaseMap for Map {
     fn is_opaque(&self, idx: usize) -> bool {
         self.tiles[idx] == TileType::Wall
@@ -199,32 +232,5 @@ impl BaseMap for Map {
 impl Algorithm2D for Map {
     fn dimensions(&self) -> Point {
         Point::new(self.width, self.height)
-    }
-}
-
-pub fn draw_map(world: &mut World, ctx: &mut BTerm) {
-    let map = world.resource::<Map>();
-    let mut x = 0;
-    let mut y = 0;
-
-    for (idx, tile) in map.tiles.iter().enumerate() {
-        if map.revealed_tiles.contains(idx) {
-            let (glyph, mut fg) = match tile {
-                TileType::Floor => (to_cp437('.'), RGB::named(TEAL)),
-                TileType::Wall => (to_cp437('#'), RGB::named(GREEN)),
-            };
-
-            if !map.visible_tiles.contains(idx) {
-                fg = fg.to_greyscale()
-            }
-
-            ctx.set(x, y, fg, RGB::named(BLACK), glyph);
-        }
-
-        x += 1;
-        if x > 79 {
-            x = 0;
-            y += 1;
-        }
     }
 }

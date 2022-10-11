@@ -1,5 +1,6 @@
-use bevy_ecs::prelude::*;
-use bracket_lib::prelude::*;
+use bevy::prelude::*;
+use bracket_bevy::prelude::*;
+use bracket_bevy::FontCharType;
 
 #[derive(Component, Debug)]
 pub struct Player;
@@ -8,14 +9,15 @@ pub struct Player;
 pub struct Monster;
 
 #[derive(Component, Debug)]
-pub struct Name {
-    pub name: String,
-}
-
-#[derive(Component, Debug)]
 pub struct Position {
     pub x: i32,
     pub y: i32,
+}
+
+impl Position {
+    pub fn as_point(&self) -> Point {
+        Point::new(self.x, self.y)
+    }
 }
 
 #[derive(Component, Debug)]
@@ -35,11 +37,11 @@ pub struct Renderable {
 }
 
 impl Renderable {
-    pub fn new(glyph: char, fg: (u8, u8, u8), bg: (u8, u8, u8)) -> Self {
+    pub fn new(glyph: char, fg: Color, bg: Color) -> Self {
         Self {
             glyph: to_cp437(glyph),
-            fg: RGB::named(fg),
-            bg: RGB::named(bg),
+            fg: fg.into(),
+            bg: bg.into(),
         }
     }
 }
@@ -75,8 +77,4 @@ pub struct WantsToMelee {
 #[derive(Component, Debug)]
 pub struct SufferDamage {
     pub amount: Vec<i32>,
-}
-
-impl SufferDamage {
-    pub fn new() {}
 }

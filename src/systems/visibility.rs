@@ -1,5 +1,5 @@
-use bevy_ecs::prelude::*;
-use bracket_lib::prelude::*;
+use bevy::prelude::*;
+use bracket_pathfinding::prelude::*;
 
 use crate::components::{Player, Position, Viewshed};
 use crate::map::Map;
