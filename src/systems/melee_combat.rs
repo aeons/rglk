@@ -21,6 +21,14 @@ pub fn melee_combat(
                     console::log(format!("{} is unable to hurt {}", name, target_name));
                 } else {
                     console::log(format!("{} hits {} for {damage} hp", name, target_name));
+                    match target_dmg {
+                        Some(mut suffering) => suffering.amount.push(damage),
+                        None => {
+                            commands.entity(target).insert(SufferDamage {
+                                amount: vec![damage],
+                            });
+                        }
+                    }
                 }
             }
         }

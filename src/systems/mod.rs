@@ -1,3 +1,5 @@
+mod damage;
+mod death;
 mod map_indexing;
 mod melee_combat;
 mod monster_ai;
@@ -7,6 +9,8 @@ mod run_state;
 mod setup;
 mod visibility;
 
+pub use damage::damage;
+pub use death::death;
 pub use map_indexing::map_indexing;
 pub use melee_combat::melee_combat;
 pub use monster_ai::monster_ai;

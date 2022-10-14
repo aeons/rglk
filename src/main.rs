@@ -44,6 +44,8 @@ fn main() {
         .add_system(player_movement)
         .add_system(monster_ai.after(player_movement))
         .add_system(melee_combat.after(monster_ai))
+        .add_system_to_stage(CoreStage::PostUpdate, damage)
+        .add_system_to_stage(CoreStage::PostUpdate, death.after(damage))
         .add_system_to_stage(CoreStage::Last, map_indexing)
         .add_system_to_stage(CoreStage::Last, render)
         .run()
