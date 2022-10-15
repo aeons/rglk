@@ -6,6 +6,7 @@ mod player;
 mod rect;
 mod systems;
 
+use bevy::ecs::schedule::ShouldRun;
 use bevy::prelude::*;
 use bracket_bevy::prelude::*;
 use map::Map;
@@ -17,6 +18,32 @@ pub enum RunState {
     AwaitingInput,
     PlayerTurn,
     MonsterTurn,
+}
+
+impl RunState {
+    pub fn when_awaiting_input(run_state: Res<RunState>) -> ShouldRun {
+        if *run_state == Self::AwaitingInput {
+            ShouldRun::Yes
+        } else {
+            ShouldRun::No
+        }
+    }
+
+    pub fn when_player_turn(run_state: Res<RunState>) -> ShouldRun {
+        if *run_state == Self::PlayerTurn {
+            ShouldRun::Yes
+        } else {
+            ShouldRun::No
+        }
+    }
+
+    pub fn when_monster_turn(run_state: Res<RunState>) -> ShouldRun {
+        if *run_state == Self::MonsterTurn {
+            ShouldRun::Yes
+        } else {
+            ShouldRun::No
+        }
+    }
 }
 
 fn main() {
@@ -39,14 +66,22 @@ fn main() {
         .init_resource::<RunState>()
         .init_resource::<Map>()
         .add_startup_system(setup)
-        .add_system_to_stage(CoreStage::First, run_state)
         .add_system(visibility)
-        .add_system(player_movement)
-        .add_system(monster_ai.after(player_movement))
+        .add_system(
+            player_movement
+                .after(visibility)
+                .with_run_criteria(RunState::when_awaiting_input),
+        )
+        .add_system(
+            monster_ai
+                .after(player_movement)
+                .with_run_criteria(RunState::when_monster_turn),
+        )
         .add_system(melee_combat.after(monster_ai))
         .add_system_to_stage(CoreStage::PostUpdate, damage)
         .add_system_to_stage(CoreStage::PostUpdate, death.after(damage))
         .add_system_to_stage(CoreStage::Last, map_indexing)
         .add_system_to_stage(CoreStage::Last, render)
+        .add_system_to_stage(CoreStage::Last, run_state)
         .run()
 }
