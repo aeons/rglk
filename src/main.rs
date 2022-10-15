@@ -1,6 +1,7 @@
 #![allow(clippy::type_complexity)]
 
 mod components;
+mod gamelog;
 mod map;
 mod player;
 mod rect;
@@ -10,6 +11,8 @@ use bevy::ecs::schedule::ShouldRun;
 use bevy::prelude::*;
 use bracket_bevy::prelude::*;
 use map::Map;
+
+use crate::gamelog::GameLog;
 
 #[derive(PartialEq, Eq, Copy, Clone, Default)]
 pub enum RunState {
@@ -65,6 +68,7 @@ fn main() {
         )
         .init_resource::<RunState>()
         .init_resource::<Map>()
+        .init_resource::<GameLog>()
         .add_startup_system(setup)
         .add_system(visibility)
         .add_system(
@@ -81,7 +85,8 @@ fn main() {
         .add_system_to_stage(CoreStage::PostUpdate, damage)
         .add_system_to_stage(CoreStage::PostUpdate, death.after(damage))
         .add_system_to_stage(CoreStage::Last, map_indexing)
-        .add_system_to_stage(CoreStage::Last, render)
+        .add_system_to_stage(CoreStage::Last, draw_map)
+        .add_system_to_stage(CoreStage::Last, draw_ui.after(draw_map))
         .add_system_to_stage(CoreStage::Last, run_state)
         .run()
 }

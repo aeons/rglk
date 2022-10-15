@@ -7,6 +7,10 @@ use bracket_pathfinding::prelude::*;
 
 use crate::rect::Rect;
 
+const MAP_WIDTH: usize = 80;
+const MAP_HEIGHT: usize = 43;
+const MAP_COUNT: usize = MAP_WIDTH * MAP_HEIGHT;
+
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum TileType {
     Wall,
@@ -28,14 +32,14 @@ pub struct Map {
 impl Map {
     pub fn new_rooms_and_corridors(rng: &RandomNumbers) -> Self {
         let mut map = Self {
-            tiles: vec![TileType::Wall; 80 * 50],
+            tiles: vec![TileType::Wall; MAP_COUNT],
             rooms: Vec::new(),
-            width: 80,
-            height: 50,
+            width: MAP_WIDTH as i32,
+            height: MAP_HEIGHT as i32,
             revealed_tiles: BitSet::new(),
             visible_tiles: BitSet::new(),
             blocked_tiles: BitSet::new(),
-            tile_content: vec![Vec::new(); 80 * 50],
+            tile_content: vec![Vec::new(); MAP_COUNT],
         };
 
         const MAX_ROOMS: i32 = 30;

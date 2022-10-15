@@ -1,10 +1,11 @@
 use bevy::prelude::*;
-use bracket_terminal::console;
 
 use crate::components::{CombatStats, SufferDamage, WantsToMelee};
+use crate::gamelog::GameLog;
 
 pub fn melee_combat(
     mut commands: Commands,
+    mut log: ResMut<GameLog>,
     query: Query<(Entity, &WantsToMelee, &Name, &CombatStats)>,
     mut target_query: Query<(Entity, &CombatStats, &Name, Option<&mut SufferDamage>)>,
 ) {
@@ -18,9 +19,9 @@ pub fn melee_combat(
                 let damage = i32::max(0, stats.power - target_stats.defense);
 
                 if damage <= 0 {
-                    console::log(format!("{} is unable to hurt {}", name, target_name));
+                    log.append(format!("{} is unable to hurt {}", name, target_name));
                 } else {
-                    console::log(format!("{} hits {} for {damage} hp", name, target_name));
+                    log.append(format!("{} hits {} for {damage} hp", name, target_name));
                     match target_dmg {
                         Some(mut suffering) => suffering.amount.push(damage),
                         None => {

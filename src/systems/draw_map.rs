@@ -4,7 +4,7 @@ use bracket_bevy::prelude::*;
 use crate::components::{Position, Renderable};
 use crate::map::Map;
 
-pub fn render(ctx: Res<BracketContext>, map: Res<Map>, query: Query<(&Position, &Renderable)>) {
+pub fn draw_map(ctx: Res<BracketContext>, map: Res<Map>, query: Query<(&Position, &Renderable)>) {
     ctx.cls();
 
     map.draw(&ctx);
