@@ -87,6 +87,7 @@ fn main() {
         .add_system_to_stage(CoreStage::Last, map_indexing)
         .add_system_to_stage(CoreStage::Last, draw_map)
         .add_system_to_stage(CoreStage::Last, draw_ui.after(draw_map))
+        .add_system_to_stage(CoreStage::Last, draw_tooltips.after(draw_ui))
         .add_system_to_stage(CoreStage::Last, run_state)
         .run()
 }
