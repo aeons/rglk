@@ -5,8 +5,8 @@ mod gamelog;
 mod map;
 mod player;
 mod rect;
-mod systems;
 pub mod spawn;
+mod systems;
 
 use bevy::ecs::schedule::ShouldRun;
 use bevy::prelude::*;
@@ -82,6 +82,7 @@ fn main() {
                 .after(player_movement)
                 .with_run_criteria(RunState::when_monster_turn),
         )
+        .add_system(item_collection.after(player_movement).after(monster_ai))
         .add_system(melee_combat.after(monster_ai))
         .add_system_to_stage(CoreStage::PostUpdate, damage)
         .add_system_to_stage(CoreStage::PostUpdate, death.after(damage))
