@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bracket_pathfinding::prelude::*;
 
 use crate::components::{Monster, Player, Position, Viewshed, WantsToMelee};
-use crate::map::Map;
+use crate::map::{Map, self};
 use crate::RunState;
 
 pub fn monster_ai(
@@ -26,11 +26,11 @@ pub fn monster_ai(
                 .entity(monster)
                 .insert(WantsToMelee { target: player });
         } else if viewshed.visible_tiles.contains(&player_pos) {
-            let start = map.xy_idx(pos.x, pos.y);
-            let path = a_star_search(start, map.xy_idx(player_pos.x, player_pos.y), &*map);
+            let start = map::xy_idx(pos.x, pos.y);
+            let path = a_star_search(start,  map::xy_idx(player_pos.x, player_pos.y), &*map);
 
             if path.success && path.steps.len() > 1 {
-                let (x, y) = map.idx_xy(path.steps[1]);
+                let (x, y) =  map::idx_xy(path.steps[1]);
                 pos.x = x;
                 pos.y = y;
                 map.blocked_tiles.remove(start);

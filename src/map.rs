@@ -7,9 +7,17 @@ use bracket_pathfinding::prelude::*;
 
 use crate::rect::Rect;
 
-const MAP_WIDTH: usize = 80;
-const MAP_HEIGHT: usize = 43;
-const MAP_COUNT: usize = MAP_WIDTH * MAP_HEIGHT;
+pub const MAP_WIDTH: usize = 80;
+pub const MAP_HEIGHT: usize = 43;
+pub const MAP_COUNT: usize = MAP_WIDTH * MAP_HEIGHT;
+
+pub fn xy_idx(x: i32, y: i32) -> usize {
+    (y as usize * MAP_WIDTH) + x as usize
+}
+
+pub fn idx_xy(idx: usize) -> (i32, i32) {
+    ((idx % MAP_WIDTH) as i32, (idx / MAP_WIDTH) as i32)
+}
 
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum TileType {
@@ -107,18 +115,10 @@ impl Map {
         }
     }
 
-    pub fn xy_idx(&self, x: i32, y: i32) -> usize {
-        (y as usize * self.width as usize) + x as usize
-    }
-
-    pub fn idx_xy(&self, idx: usize) -> (i32, i32) {
-        (idx as i32 % self.width, idx as i32 / self.width)
-    }
-
     fn add_room(&mut self, room: &Rect) {
         for y in room.y1 + 1..=room.y2 {
             for x in room.x1 + 1..=room.x2 {
-                let idx = self.xy_idx(x, y);
+                let idx = xy_idx(x, y);
                 self.tiles[idx] = TileType::Floor;
             }
         }
@@ -126,7 +126,7 @@ impl Map {
 
     fn add_horizontal_tunnel(&mut self, x1: i32, x2: i32, y: i32) {
         for x in min(x1, x2)..=max(x1, x2) {
-            let idx = self.xy_idx(x, y);
+            let idx = xy_idx(x, y);
             if idx > 0 && idx < (self.height * self.width) as usize {
                 self.tiles[idx as usize] = TileType::Floor;
             }
@@ -135,7 +135,7 @@ impl Map {
 
     fn add_vertical_tunnel(&mut self, y1: i32, y2: i32, x: i32) {
         for y in min(y1, y2)..=max(y1, y2) {
-            let idx = self.xy_idx(x, y);
+            let idx = xy_idx(x, y);
             if idx > 0 && idx < (self.height * self.width) as usize {
                 self.tiles[idx as usize] = TileType::Floor;
             }
@@ -152,18 +152,18 @@ impl Map {
     }
 
     pub fn reveal_tile(&mut self, x: i32, y: i32) {
-        let idx = self.xy_idx(x, y);
+        let idx = xy_idx(x, y);
         self.revealed_tiles.insert(idx);
         self.visible_tiles.insert(idx);
     }
 
     pub fn is_visible(&self, x: i32, y: i32) -> bool {
-        self.revealed_tiles.contains(self.xy_idx(x, y))
+        self.revealed_tiles.contains(xy_idx(x, y))
     }
 
     pub fn is_valid_exit(&self, x: i32, y: i32) -> bool {
         x > 0 && x < self.width && y > 0 && y < self.height && {
-            let idx = self.xy_idx(x, y);
+            let idx = xy_idx(x, y);
             !self.blocked_tiles.contains(idx)
         }
     }
@@ -189,7 +189,7 @@ impl BaseMap for Map {
 
     fn get_available_exits(&self, idx: usize) -> SmallVec<[(usize, f32); 10]> {
         let mut exits = SmallVec::new();
-        let (x, y) = self.idx_xy(idx);
+        let (x, y) = idx_xy(idx);
         let w = self.width as usize;
 
         // Cardinal directions
@@ -224,9 +224,9 @@ impl BaseMap for Map {
     }
 
     fn get_pathing_distance(&self, idx1: usize, idx2: usize) -> f32 {
-        let (x1, y1) = self.idx_xy(idx1);
+        let (x1, y1) = idx_xy(idx1);
         let p1 = Point::new(x1, y1);
-        let (x2, y2) = self.idx_xy(idx2);
+        let (x2, y2) = idx_xy(idx2);
         let p2 = Point::new(x2, y2);
 
         DistanceAlg::Pythagoras.distance2d(p1, p2)

@@ -6,6 +6,7 @@ mod map;
 mod player;
 mod rect;
 mod systems;
+pub mod spawn;
 
 use bevy::ecs::schedule::ShouldRun;
 use bevy::prelude::*;

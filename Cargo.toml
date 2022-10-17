@@ -9,6 +9,7 @@ opt-level = 3
 [dependencies]
 bevy = "0.8"
 bit-set = "0.5"
-bracket-bevy = {git = "https://github.com/amethyst/bracket-lib"}
-bracket-terminal = {git = "https://github.com/amethyst/bracket-lib"}
-bracket-pathfinding = {git = "https://github.com/amethyst/bracket-lib"}
+bracket-bevy = { git = "https://github.com/amethyst/bracket-lib" }
+bracket-pathfinding = { git = "https://github.com/amethyst/bracket-lib" }
+bracket-random = { git = "https://github.com/amethyst/bracket-lib" }
+bracket-terminal = { git = "https://github.com/amethyst/bracket-lib" }

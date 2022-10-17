@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::components::{CombatStats, Player, Position, WantsToMelee};
-use crate::map::Map;
+use crate::map::{self, Map};
 use crate::player::{player_input, PlayerInput};
 use crate::RunState;
 
@@ -31,7 +31,7 @@ pub fn player_movement(
     let (player, mut pos) = player_query.single_mut();
     let dst_x = pos.x + delta_x;
     let dst_y = pos.y + delta_y;
-    let dst = map.xy_idx(dst_x, dst_y);
+    let dst = map::xy_idx(dst_x, dst_y);
 
     for potential_target in map.tile_content[dst].iter() {
         if target_query.get(*potential_target).is_ok() {

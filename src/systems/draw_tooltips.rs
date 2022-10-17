@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bracket_bevy::prelude::*;
 
 use crate::components::Position;
-use crate::map::Map;
+use crate::map::{Map, self};
 
 pub fn draw_tooltips(map: Res<Map>, ctx: Res<BracketContext>, query: Query<(&Name, &Position)>) {
     let mouse_pos = ctx.get_mouse_position_for_current_layer();
@@ -16,7 +16,7 @@ pub fn draw_tooltips(map: Res<Map>, ctx: Res<BracketContext>, query: Query<(&Nam
             && position.y == mouse_pos.y
             && map
                 .visible_tiles
-                .contains(map.xy_idx(position.x, position.y))
+                .contains(map::xy_idx(position.x, position.y))
         {
             tooltip.push(name.into());
         }

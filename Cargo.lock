@@ -3005,6 +3005,7 @@ dependencies = [
  "bit-set",
  "bracket-bevy",
  "bracket-pathfinding",
+ "bracket-random",
  "bracket-terminal",
 ]
 
