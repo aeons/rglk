@@ -78,3 +78,11 @@ pub struct WantsToMelee {
 pub struct SufferDamage {
     pub amount: Vec<i32>,
 }
+
+#[derive(Component, Debug)]
+pub struct Item;
+
+#[derive(Component, Debug)]
+pub struct Potion {
+    pub heal_amount: i32,
+}

@@ -65,27 +65,40 @@ pub fn monster(
         });
 }
 
+fn health_potion(commands: &mut Commands, x: i32, y: i32) {
+    commands
+        .spawn()
+        .insert(Item)
+        .insert(Position { x, y })
+        .insert(Renderable::new('¡', Color::FUCHSIA, Color::BLACK))
+        .insert(Name::new("Health Potion"))
+        .insert(Potion { heal_amount: 8 });
+}
+
 pub fn fill_room(commands: &mut Commands, rng: &RandomNumbers, room: &Rect) {
-    let mut monster_spawns = Vec::new();
-
-    let num_monsters = rng.roll_dice(1, MAX_MONSTERS + 2) - 3;
-
-    for _ in 0..num_monsters {
-        loop {
-            let x = minmax_range(rng, room.x1, room.x2);
-            let y = minmax_range(rng, room.y1, room.y2);
-            let idx = map::xy_idx(x, y);
-            if !monster_spawns.contains(&idx) {
-                monster_spawns.push(idx);
-                break;
+    let fill = |spawn: &mut dyn FnMut(i32, i32)| {
+        let mut spawns = Vec::new();
+        let num_spawns = rng.roll_dice(1, MAX_MONSTERS + 2) - 3;
+        for _ in 0..num_spawns {
+            loop {
+                let x = minmax_range(rng, room.x1 + 1, room.x2);
+                let y = minmax_range(rng, room.y1 + 1, room.y2);
+                let idx = map::xy_idx(x, y);
+                if !spawns.contains(&idx) {
+                    spawns.push(idx);
+                    break;
+                }
             }
         }
-    }
 
-    for idx in monster_spawns.iter() {
-        let (x, y) = map::idx_xy(*idx);
-        random_monster(commands, rng, x, y);
-    }
+        for idx in spawns.iter() {
+            let (x, y) = map::idx_xy(*idx);
+            spawn(x, y);
+        }
+    };
+
+    fill(&mut |x, y| random_monster(commands, rng, x, y));
+    fill(&mut |x, y| health_potion(commands, x, y))
 }
 
 fn minmax_range<T>(rng: &RandomNumbers, n1: T, n2: T) -> T
