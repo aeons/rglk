@@ -15,7 +15,7 @@ use map::Map;
 
 use crate::gamelog::GameLog;
 
-#[derive(PartialEq, Eq, Copy, Clone, Default)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Default)]
 pub enum RunState {
     #[default]
     PreRun,
@@ -73,10 +73,11 @@ fn main() {
         .add_startup_system(setup)
         .add_system(visibility)
         .add_system(
-            player_movement
+            player_input
                 .after(visibility)
                 .with_run_criteria(RunState::when_awaiting_input),
         )
+        .add_system(player_movement.after(player_input))
         .add_system(
             monster_ai
                 .after(player_movement)

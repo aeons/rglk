@@ -1,15 +1,16 @@
 use bevy::prelude::*;
 
-use crate::components::{InBackpack, Position, WantsToPickupItem, Player};
+use crate::components::{InBackpack, Item, Player, Position, WantsToPickupItem};
 use crate::gamelog::GameLog;
 
 pub fn item_collection(
     mut commands: Commands,
-    log: ResMut<GameLog>,
-    query: Query<(&mut WantsToPickupItem)>,
+    mut log: ResMut<GameLog>,
+    query: Query<&mut WantsToPickupItem>,
     player: Query<Entity, With<Player>>,
+    item_name: Query<&Name, With<Item>>,
 ) {
-    let player = player.single_mut();
+    let player = player.single();
 
     for pickup in &query {
         commands
@@ -20,7 +21,8 @@ pub fn item_collection(
             });
 
         if pickup.collected_by == player {
-            log.append(format!("You pick up the {}"));
+            let item = item_name.get(pickup.item).expect("item should exist");
+            log.append(format!("You pick up the {item}"));
         }
     }
 }

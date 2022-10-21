@@ -8,7 +8,7 @@ pub struct Player;
 #[derive(Component, Debug)]
 pub struct Monster;
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, PartialEq, Eq)]
 pub struct Position {
     pub x: i32,
     pub y: i32,
