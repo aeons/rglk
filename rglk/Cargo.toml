@@ -1,0 +1,8 @@
+[package]
+edition = "2021"
+name = "rglk"
+version = "0.1.0"
+
+[dependencies.bevy]
+features = ["dynamic_linking"]
+version = "0.11"
