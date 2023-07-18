@@ -3,6 +3,13 @@ edition = "2021"
 name = "rglk"
 version = "0.1.0"
 
+[dependencies]
+bevy_ascii_terminal = "0.13.0"
+bevy_turborand = "0.6.0"
+bracket-geometry = "0.8.7"
+bracket-pathfinding = "0.8.7"
+fixedbitset = "0.4.2"
+
 [dependencies.bevy]
 features = ["dynamic_linking"]
 version = "0.11"
