@@ -19,6 +19,7 @@ pub struct Map {
     pub rooms: Vec<Rect>,
     pub dimensions: Point,
     pub revealed_tiles: FixedBitSet,
+    pub visible_tiles: FixedBitSet,
 }
 
 impl Map {
@@ -28,6 +29,7 @@ impl Map {
             rooms: Vec::new(),
             dimensions: Point::new(MAP_WIDTH, MAP_HEIGHT),
             revealed_tiles: FixedBitSet::with_capacity(MAP_COUNT),
+            visible_tiles: FixedBitSet::with_capacity(MAP_COUNT),
         };
 
         const MAX_ROOMS: i32 = 30;
@@ -69,11 +71,15 @@ impl Map {
         let mut x = 0;
         let mut y = 0;
         for tile in self.tiles.iter() {
-            if self.revealed_tiles[self.point2d_to_index((x, y).into())] {
-                match tile {
-                    TileType::Floor => term.put_char([x, y], '.'.fg(Color::GRAY)),
-                    TileType::Wall => term.put_char([x, y], '#'.fg(Color::GREEN)),
-                }
+            let point = self.point2d_to_index((x,y).into());
+            if self.revealed_tiles[point] {
+                let (glyph, mut fg) = match tile {
+                    TileType::Floor => ('.', Color::GRAY),
+                    TileType::Wall => ('#',Color::GREEN),
+                };
+                if !self.visible_tiles[point] { fg = to_greyscale(fg)}
+
+                term.put_char([x, y], glyph.fg(fg));
             }
 
             x += 1;
@@ -119,4 +125,9 @@ impl Algorithm2D for Map {
     fn dimensions(&self) -> Point {
         self.dimensions
     }
+}
+
+fn to_greyscale(color: Color) -> Color {
+    let linear = (color.r() * 0.2126) + (color.g() * 0.7152) + (color.b() * 0.0722);
+    Color::rgb(linear, linear, linear)
 }
