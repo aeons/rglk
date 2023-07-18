@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use bevy::prelude::*;
 use bevy_ascii_terminal::{FormattedTile, GridPoint, Pivot};
 use bracket_geometry::prelude::Point;
@@ -8,6 +10,14 @@ pub struct Position(pub Point);
 impl Position {
     pub fn new(x: i32, y: i32) -> Self {
         Self(Point { x, y })
+    }
+}
+
+impl Deref for Position {
+    type Target = Point;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 

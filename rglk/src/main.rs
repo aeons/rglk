@@ -1,5 +1,6 @@
 mod components;
 mod map;
+mod spawn;
 mod systems;
 
 use bevy::prelude::*;

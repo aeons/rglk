@@ -14,6 +14,8 @@ pub fn render(
     map.render(&mut terminal);
 
     for (pos, r) in renderables.iter() {
-        terminal.put_char(*pos, r.0.clone())
+        if map.is_visible(pos) {
+            terminal.put_char(*pos, r.0.clone())
+        }
     }
 }

@@ -1,6 +1,7 @@
 use bracket_geometry::prelude::Rect;
 use fixedbitset::FixedBitSet;
 
+use crate::components::Position;
 use crate::prelude::*;
 
 pub const MAP_WIDTH: i32 = 80;
@@ -71,13 +72,15 @@ impl Map {
         let mut x = 0;
         let mut y = 0;
         for tile in self.tiles.iter() {
-            let point = self.point2d_to_index((x,y).into());
+            let point = self.point2d_to_index((x, y).into());
             if self.revealed_tiles[point] {
                 let (glyph, mut fg) = match tile {
                     TileType::Floor => ('.', Color::GRAY),
-                    TileType::Wall => ('#',Color::GREEN),
+                    TileType::Wall => ('#', Color::GREEN),
                 };
-                if !self.visible_tiles[point] { fg = to_greyscale(fg)}
+                if !self.visible_tiles[point] {
+                    fg = to_greyscale(fg)
+                }
 
                 term.put_char([x, y], glyph.fg(fg));
             }
@@ -88,6 +91,11 @@ impl Map {
                 y += 1;
             }
         }
+    }
+
+    pub fn is_visible(&self, point: &Point) -> bool {
+        let idx = self.point2d_to_index(*point);
+        self.visible_tiles[idx]
     }
 
     fn add_room(&mut self, room: &Rect) {
