@@ -43,6 +43,9 @@ pub struct Player;
 pub struct Monster;
 
 #[derive(Component, Debug)]
+pub struct BlocksTile;
+
+#[derive(Component, Debug)]
 pub struct Viewshed {
     pub visible_tiles: Vec<Point>,
     pub dirty: bool,

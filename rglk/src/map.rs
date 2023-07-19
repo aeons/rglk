@@ -18,8 +18,9 @@ pub struct Map {
     pub tiles: Vec<TileType>,
     pub rooms: Vec<Rect>,
     pub dimensions: Point,
-    pub revealed_tiles: FixedBitSet,
-    pub visible_tiles: FixedBitSet,
+    pub revealed: FixedBitSet,
+    pub visible: FixedBitSet,
+    pub blocked: FixedBitSet,
 }
 
 impl Map {
@@ -28,8 +29,9 @@ impl Map {
             tiles: vec![TileType::Wall; MAP_COUNT],
             rooms: Vec::new(),
             dimensions: Point::new(MAP_WIDTH, MAP_HEIGHT),
-            revealed_tiles: FixedBitSet::with_capacity(MAP_COUNT),
-            visible_tiles: FixedBitSet::with_capacity(MAP_COUNT),
+            revealed: FixedBitSet::with_capacity(MAP_COUNT),
+            visible: FixedBitSet::with_capacity(MAP_COUNT),
+            blocked: FixedBitSet::with_capacity(MAP_COUNT),
         };
 
         const MAX_ROOMS: i32 = 30;
@@ -72,12 +74,12 @@ impl Map {
         let mut y = 0;
         for tile in self.tiles.iter() {
             let point = self.point2d_to_index((x, y).into());
-            if self.revealed_tiles[point] {
+            if self.revealed[point] {
                 let (glyph, mut fg) = match tile {
                     TileType::Floor => ('.', Color::GRAY),
                     TileType::Wall => ('#', Color::GREEN),
                 };
-                if !self.visible_tiles[point] {
+                if !self.visible[point] {
                     fg = to_greyscale(fg)
                 }
 
@@ -93,8 +95,21 @@ impl Map {
     }
 
     pub fn is_visible(&self, pos: &Point) -> bool {
-        let idx = self.point2d_to_index(*pos);
-        self.visible_tiles[idx]
+        self.visible[self.point2d_to_index(*pos)]
+    }
+
+    pub fn is_revealed(&self, pos: &Point) -> bool {
+        self.revealed[self.point2d_to_index(*pos)]
+    }
+
+    pub fn is_blocked(&self, pos: &Point) -> bool {
+        self.blocked[self.point2d_to_index(*pos)]
+    }
+
+    pub fn populate_blocked(&mut self) {
+        for (i, tile) in self.tiles.iter().enumerate() {
+            self.blocked.set(i, *tile == TileType::Wall);
+        }
     }
 
     fn add_room(&mut self, room: &Rect) {
@@ -114,7 +129,7 @@ impl Map {
     }
 
     fn is_valid_exit(&self, pos: &Point) -> bool {
-        self.in_bounds(*pos) && self.tiles[self.point2d_to_index(*pos)] != TileType::Wall
+        self.in_bounds(*pos) && !self.is_blocked(pos)
     }
 }
 

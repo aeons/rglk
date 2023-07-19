@@ -17,6 +17,7 @@ pub fn monster(cmd: &mut Commands, position: &Point, index: usize, global_rng: &
 
     cmd.spawn((
         Monster,
+        BlocksTile,
         Name::new(format!("{name} #{index}")),
         Position(*position),
         Renderable(glyph.fg(Color::RED)),

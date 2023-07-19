@@ -24,15 +24,30 @@ pub fn player_movement(
         try_move_player(&map, &mut pos, &mut viewshed, 0, -1);
         run_state.set(RunState::Running);
     }
+    if keys.any_just_pressed([KeyCode::Y]) {
+        try_move_player(&map, &mut pos, &mut viewshed, -1, 1);
+        run_state.set(RunState::Running);
+    }
+    if keys.any_just_pressed([KeyCode::U]) {
+        try_move_player(&map, &mut pos, &mut viewshed, 1, 1);
+        run_state.set(RunState::Running);
+    }
+    if keys.any_just_pressed([KeyCode::B]) {
+        try_move_player(&map, &mut pos, &mut viewshed, -1, -1);
+        run_state.set(RunState::Running);
+    }
+    if keys.any_just_pressed([KeyCode::N]) {
+        try_move_player(&map, &mut pos, &mut viewshed, 1, -1);
+        run_state.set(RunState::Running);
+    }
 }
 
 fn try_move_player(map: &Map, pos: &mut Position, viewshed: &mut Viewshed, x: i32, y: i32) {
     let dst_x = pos.0.x + x;
     let dst_y = pos.0.y + y;
     let dst = (dst_x, dst_y).into();
-    let idx = map.point2d_to_index(dst);
 
-    if map.in_bounds(dst) && !map.is_opaque(idx) {
+    if map.in_bounds(dst) && !map.is_blocked(&dst) {
         pos.0.x = dst_x;
         pos.0.y = dst_y;
 

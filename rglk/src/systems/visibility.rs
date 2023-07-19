@@ -13,11 +13,11 @@ pub fn visibility(mut q: Query<(&Position, &mut Viewshed, Option<&Player>)>, mut
             .collect();
 
         if player.is_some() {
-            map.visible_tiles.clear();
+            map.visible.clear();
             for vis in viewshed.visible_tiles.iter() {
                 let idx = map.point2d_to_index(*vis);
-                map.revealed_tiles.insert(idx);
-                map.visible_tiles.insert(idx);
+                map.revealed.insert(idx);
+                map.visible.insert(idx);
             }
         }
     }

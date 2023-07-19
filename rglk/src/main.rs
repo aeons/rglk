@@ -47,10 +47,14 @@ fn main() {
         )
         .add_systems(
             Update,
-            (systems::visibility, systems::monster_ai, systems::render)
+            (
+                systems::visibility,
+                systems::monster_ai,
+                systems::map_indexing,
+            )
                 .chain()
                 .run_if(in_state(RunState::Running)),
         )
-        .add_systems(PostUpdate, systems::wait_for_input)
+        .add_systems(PostUpdate, (systems::render, systems::wait_for_input))
         .run();
 }
