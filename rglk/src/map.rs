@@ -41,8 +41,8 @@ impl Map {
         for _ in 0..MAX_ROOMS {
             let w = rng.i32(MIN_SIZE..MAX_SIZE);
             let h = rng.i32(MIN_SIZE..MAX_SIZE);
-            let x = rng.i32(0..(map.dimensions.x - w - 2));
-            let y = rng.i32(0..(map.dimensions.y - h - 2));
+            let x = rng.i32(1..(map.dimensions.x - w - 2));
+            let y = rng.i32(1..(map.dimensions.y - h - 2));
 
             let new_room = Rect::with_size(x, y, w, h);
 

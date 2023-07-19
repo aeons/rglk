@@ -7,6 +7,12 @@ pub fn player(cmd: &mut Commands, position: &Point) {
         Position(*position),
         Renderable('@'.fg(Color::YELLOW)),
         Viewshed::new(8),
+        CombatStats {
+            hp: 30,
+            max_hp: 30,
+            power: 5,
+            defense: 2,
+        },
     ));
 }
 
@@ -22,5 +28,11 @@ pub fn monster(cmd: &mut Commands, position: &Point, index: usize, global_rng: &
         Position(*position),
         Renderable(glyph.fg(Color::RED)),
         Viewshed::new(8),
+        CombatStats {
+            hp: 16,
+            max_hp: 16,
+            power: 4,
+            defense: 1,
+        },
     ));
 }
