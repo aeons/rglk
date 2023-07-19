@@ -21,6 +21,7 @@ pub struct Map {
     pub revealed: FixedBitSet,
     pub visible: FixedBitSet,
     pub blocked: FixedBitSet,
+    pub tile_content: Vec<Vec<Entity>>,
 }
 
 impl Map {
@@ -32,6 +33,7 @@ impl Map {
             revealed: FixedBitSet::with_capacity(MAP_COUNT),
             visible: FixedBitSet::with_capacity(MAP_COUNT),
             blocked: FixedBitSet::with_capacity(MAP_COUNT),
+            tile_content: vec![Vec::new(); MAP_COUNT],
         };
 
         const MAX_ROOMS: i32 = 30;
@@ -109,6 +111,12 @@ impl Map {
     pub fn populate_blocked(&mut self) {
         for (i, tile) in self.tiles.iter().enumerate() {
             self.blocked.set(i, *tile == TileType::Wall);
+        }
+    }
+
+    pub fn clear_content(&mut self) {
+        for content in self.tile_content.iter_mut() {
+            content.clear();
         }
     }
 
