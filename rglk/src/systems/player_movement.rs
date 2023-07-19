@@ -1,57 +1,34 @@
+use crate::player::{get_player_input, PlayerInput};
 use crate::prelude::*;
 
 pub fn player_movement(
-    mut player: Query<(&mut Position, &mut Viewshed), With<Player>>,
+    mut q_player: Query<(&mut Position, &mut Viewshed), With<Player>>,
+    q_combat_stats: Query<&CombatStats, Without<Player>>,
     keys: Res<Input<KeyCode>>,
     map: Res<Map>,
     mut run_state: ResMut<NextState<RunState>>,
 ) {
-    let (mut pos, mut viewshed) = player.single_mut();
+    let (mut pos, mut viewshed) = q_player.single_mut();
+    let input = get_player_input(&keys);
 
-    if keys.any_just_pressed([KeyCode::Left, KeyCode::H]) {
-        try_move_player(&map, &mut pos, &mut viewshed, -1, 0);
-        run_state.set(RunState::Running);
-    }
-    if keys.any_just_pressed([KeyCode::Right, KeyCode::L]) {
-        try_move_player(&map, &mut pos, &mut viewshed, 1, 0);
-        run_state.set(RunState::Running);
-    }
-    if keys.any_just_pressed([KeyCode::Up, KeyCode::K]) {
-        try_move_player(&map, &mut pos, &mut viewshed, 0, 1);
-        run_state.set(RunState::Running);
-    }
-    if keys.any_just_pressed([KeyCode::Down, KeyCode::J]) {
-        try_move_player(&map, &mut pos, &mut viewshed, 0, -1);
-        run_state.set(RunState::Running);
-    }
-    if keys.any_just_pressed([KeyCode::Y]) {
-        try_move_player(&map, &mut pos, &mut viewshed, -1, 1);
-        run_state.set(RunState::Running);
-    }
-    if keys.any_just_pressed([KeyCode::U]) {
-        try_move_player(&map, &mut pos, &mut viewshed, 1, 1);
-        run_state.set(RunState::Running);
-    }
-    if keys.any_just_pressed([KeyCode::B]) {
-        try_move_player(&map, &mut pos, &mut viewshed, -1, -1);
-        run_state.set(RunState::Running);
-    }
-    if keys.any_just_pressed([KeyCode::N]) {
-        try_move_player(&map, &mut pos, &mut viewshed, 1, -1);
-        run_state.set(RunState::Running);
-    }
-}
+    if let PlayerInput::Movement { x, y } = input {
+        let dst = **pos + Point::new(x, y);
 
-fn try_move_player(map: &Map, pos: &mut Position, viewshed: &mut Viewshed, x: i32, y: i32) {
-    let dst_x = pos.0.x + x;
-    let dst_y = pos.0.y + y;
-    let dst = (dst_x, dst_y).into();
+        for potential_target in map.tile_content[map.point2d_to_index(dst)].iter() {
+            if let Ok(_target) = q_combat_stats.get(*potential_target) {
+                println!("From Hell's heart, I stab thee!");
+                return;
+            }
+        }
 
-    if map.in_bounds(dst) && !map.is_blocked(&dst) {
-        pos.0.x = dst_x;
-        pos.0.y = dst_y;
+        if map.in_bounds(dst) && !map.is_blocked(&dst) {
+            pos.0 = dst;
+            viewshed.dirty = true;
+            println!("moved player to {:?}", dst);
+        }
 
-        viewshed.dirty = true;
-        println!("moved player to {:?}", dst);
+        run_state.set(RunState::Running);
+    } else {
+        run_state.set(RunState::Paused);
     }
 }

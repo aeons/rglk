@@ -3,6 +3,7 @@ mod map;
 pub mod spawn;
 mod state;
 mod systems;
+mod player;
 
 use bevy::prelude::*;
 use bevy_ascii_terminal::prelude::*;
