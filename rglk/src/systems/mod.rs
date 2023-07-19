@@ -1,4 +1,5 @@
 mod map_indexing;
+mod melee_combat;
 mod monster_ai;
 mod player_movement;
 mod render;
@@ -7,6 +8,7 @@ mod visibility;
 mod wait_for_input;
 
 pub use map_indexing::map_indexing;
+pub use melee_combat::melee_combat;
 pub use monster_ai::monster_ai;
 pub use player_movement::player_movement;
 pub use render::render;

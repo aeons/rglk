@@ -136,7 +136,7 @@ impl Map {
         }
     }
 
-    fn is_valid_exit(&self, pos: &Point) -> bool {
+    pub fn is_valid_exit(&self, pos: &Point) -> bool {
         self.in_bounds(*pos) && !self.is_blocked(pos)
     }
 }

@@ -1,9 +1,9 @@
 mod components;
 mod map;
+mod player;
 pub mod spawn;
 mod state;
 mod systems;
-mod player;
 
 use bevy::prelude::*;
 use bevy_ascii_terminal::prelude::*;
@@ -51,6 +51,7 @@ fn main() {
             (
                 systems::visibility,
                 systems::monster_ai,
+                systems::melee_combat,
                 systems::map_indexing,
             )
                 .chain()
