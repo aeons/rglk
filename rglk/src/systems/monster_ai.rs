@@ -10,7 +10,7 @@ pub fn monster_ai(
     for (name, mut pos, mut viewshed) in q_monsters.iter_mut() {
         let distance = DistanceAlg::Pythagoras.distance2d(**pos, **player_pos);
         if distance < 1.5 {
-            println!("{name} shouts insults!");
+            info!("{name} shouts insults!");
         } else if viewshed.visible_tiles.contains(&player_pos) {
             let idx = map.point2d_to_index(**pos);
             let path = a_star_search(idx, map.point2d_to_index(**player_pos), &*map);

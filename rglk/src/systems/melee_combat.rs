@@ -12,9 +12,9 @@ pub fn melee_combat(
                     let damage = i32::max(0, stats.power - target_stats.defense);
 
                     if damage == 0 {
-                        println!("{name} is unable to hurt {target_name}");
+                        info!("{name} is unable to hurt {target_name}");
                     } else {
-                        println!("{name} hits {target_name} for {damage} hp");
+                        info!("{name} hits {target_name} for {damage} hp");
 
                         // cmd.entity(wants_melee.target)
                             // .insert(SufferDamage { amount: damage });

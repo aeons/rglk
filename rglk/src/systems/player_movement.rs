@@ -27,7 +27,6 @@ pub fn player_movement(
         if map.is_valid_exit(&dst) {
             pos.0 = dst;
             viewshed.dirty = true;
-            println!("moved player to {:?}", dst);
         }
 
         run_state.set(RunState::Running);
