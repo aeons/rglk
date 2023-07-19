@@ -92,8 +92,8 @@ impl Map {
         }
     }
 
-    pub fn is_visible(&self, point: &Point) -> bool {
-        let idx = self.point2d_to_index(*point);
+    pub fn is_visible(&self, pos: &Point) -> bool {
+        let idx = self.point2d_to_index(*pos);
         self.visible_tiles[idx]
     }
 
@@ -112,6 +112,10 @@ impl Map {
             }
         }
     }
+
+    fn is_valid_exit(&self, pos: &Point) -> bool {
+        self.in_bounds(*pos) && self.tiles[self.point2d_to_index(*pos)] != TileType::Wall
+    }
 }
 
 impl FromWorld for Map {
@@ -126,6 +130,18 @@ impl BaseMap for Map {
     fn is_opaque(&self, idx: usize) -> bool {
         self.tiles[idx] == TileType::Wall
     }
+
+    fn get_available_exits(&self, idx: usize) -> SmallVec<[(usize, f32); 10]> {
+        neighbours(&self.index_to_point2d(idx))
+            .iter()
+            .filter(|p| self.is_valid_exit(p))
+            .map(|p| (self.point2d_to_index(*p), 1.0))
+            .collect()
+    }
+
+    fn get_pathing_distance(&self, idx1: usize, idx2: usize) -> f32 {
+        DistanceAlg::Pythagoras.distance2d(self.index_to_point2d(idx1), self.index_to_point2d(idx2))
+    }
 }
 
 impl Algorithm2D for Map {
@@ -137,4 +153,25 @@ impl Algorithm2D for Map {
 fn to_greyscale(color: Color) -> Color {
     let linear = (color.r() * 0.2126) + (color.g() * 0.7152) + (color.b() * 0.0722);
     Color::rgb(linear, linear, linear)
+}
+
+fn neighbours(pos: &Point) -> [Point; 8] {
+    [
+        // N
+        Point::new(pos.x, pos.y + 1),
+        // NE
+        Point::new(pos.x + 1, pos.y + 1),
+        // E
+        Point::new(pos.x + 1, pos.y),
+        // SE
+        Point::new(pos.x + 1, pos.y - 1),
+        // S
+        Point::new(pos.x, pos.y - 1),
+        // SW
+        Point::new(pos.x - 1, pos.y - 1),
+        // W
+        Point::new(pos.x - 1, pos.y),
+        // NW
+        Point::new(pos.x - 1, pos.y + 1),
+    ]
 }
