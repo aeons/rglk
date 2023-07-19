@@ -1,12 +1,14 @@
 mod components;
 mod map;
-mod spawn;
+pub mod spawn;
+mod state;
 mod systems;
 
 use bevy::prelude::*;
 use bevy_ascii_terminal::prelude::*;
 use bevy_turborand::prelude::RngPlugin;
 pub use map::Map;
+use state::RunState;
 
 mod prelude {
     pub use bevy::prelude::*;
@@ -14,6 +16,10 @@ mod prelude {
     pub use bevy_turborand::prelude::*;
     pub use bracket_geometry::prelude::*;
     pub use bracket_pathfinding::prelude::*;
+
+    pub use crate::components::*;
+    pub use crate::state::RunState;
+    pub use crate::{spawn, Map};
 }
 
 fn main() {
@@ -34,14 +40,17 @@ fn main() {
         .insert_resource(ClearColor(Color::BLACK))
         .init_resource::<Map>()
         .add_systems(Startup, systems::setup)
+        .add_state::<RunState>()
+        .add_systems(
+            PreUpdate,
+            systems::player_movement.run_if(in_state(RunState::Paused)),
+        )
         .add_systems(
             Update,
-            (
-                systems::visibility,
-                systems::player_movement,
-                systems::render,
-            )
-                .chain(),
+            (systems::visibility, systems::monster_ai, systems::render)
+                .chain()
+                .run_if(in_state(RunState::Running)),
         )
+        .add_systems(PostUpdate, systems::wait_for_input)
         .run();
 }

@@ -1,8 +1,6 @@
 use std::ops::Deref;
 
-use bevy::prelude::*;
-use bevy_ascii_terminal::{FormattedTile, GridPoint, Pivot};
-use bracket_geometry::prelude::Point;
+use crate::prelude::*;
 
 #[derive(Component, Debug, Clone, Copy)]
 pub struct Position(pub Point);
@@ -40,6 +38,9 @@ pub struct Renderable(pub FormattedTile);
 
 #[derive(Component, Debug)]
 pub struct Player;
+
+#[derive(Component, Debug)]
+pub struct Monster;
 
 #[derive(Component, Debug)]
 pub struct Viewshed {

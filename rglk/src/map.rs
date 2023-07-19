@@ -1,7 +1,6 @@
 use bracket_geometry::prelude::Rect;
 use fixedbitset::FixedBitSet;
 
-use crate::components::Position;
 use crate::prelude::*;
 
 pub const MAP_WIDTH: i32 = 80;

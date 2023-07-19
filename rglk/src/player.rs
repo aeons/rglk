@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use crate::prelude::*;
 
 #[derive(Debug, Component, PartialEq, Eq)]
 pub enum PlayerInput {

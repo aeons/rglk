@@ -1,6 +1,4 @@
-use crate::components::{Player, Position, Viewshed};
 use crate::prelude::*;
-use crate::Map;
 
 pub fn visibility(mut q: Query<(&Position, &mut Viewshed, Option<&Player>)>, mut map: ResMut<Map>) {
     for (pos, mut viewshed, player) in q.iter_mut() {
