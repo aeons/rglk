@@ -1,3 +1,5 @@
+mod damage;
+mod delete_the_dead;
 mod map_indexing;
 mod melee_combat;
 mod monster_ai;
@@ -7,6 +9,8 @@ mod setup;
 mod visibility;
 mod wait_for_input;
 
+pub use damage::damage;
+pub use delete_the_dead::delete_the_dead;
 pub use map_indexing::map_indexing;
 pub use melee_combat::melee_combat;
 pub use monster_ai::monster_ai;

@@ -1,5 +1,8 @@
 use crate::prelude::*;
 
+#[derive(Resource)]
+pub struct PlayerEntity(pub Entity);
+
 #[derive(Debug, Component, PartialEq, Eq)]
 pub enum PlayerInput {
     Idle,

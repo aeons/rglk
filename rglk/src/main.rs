@@ -19,6 +19,7 @@ mod prelude {
     pub use bracket_pathfinding::prelude::*;
 
     pub use crate::components::*;
+    pub use crate::player::PlayerEntity;
     pub use crate::state::RunState;
     pub use crate::{spawn, Map};
 }
@@ -51,7 +52,12 @@ fn main() {
             (
                 systems::visibility,
                 systems::monster_ai,
-                systems::melee_combat,
+                (
+                    systems::melee_combat,
+                    systems::damage,
+                    systems::delete_the_dead,
+                )
+                    .chain(),
                 systems::map_indexing,
             )
                 .chain()

@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-pub fn player(cmd: &mut Commands, position: &Point) {
+pub fn player(cmd: &mut Commands, position: &Point) -> Entity {
     cmd.spawn((
         Player,
         Name::new("Player"),
@@ -13,10 +13,16 @@ pub fn player(cmd: &mut Commands, position: &Point) {
             power: 5,
             defense: 2,
         },
-    ));
+    ))
+    .id()
 }
 
-pub fn monster(cmd: &mut Commands, position: &Point, index: usize, global_rng: &mut GlobalRng) {
+pub fn monster(
+    cmd: &mut Commands,
+    position: &Point,
+    index: usize,
+    global_rng: &mut GlobalRng,
+) -> Entity {
     let (glyph, name) = global_rng
         .sample(&[('g', "Goblin"), ('o', "Orc")])
         .expect("monster sample list should not be empty");
@@ -34,5 +40,6 @@ pub fn monster(cmd: &mut Commands, position: &Point, index: usize, global_rng: &
             power: 4,
             defense: 1,
         },
-    ));
+    ))
+    .id()
 }
