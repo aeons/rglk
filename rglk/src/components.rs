@@ -5,12 +5,6 @@ use crate::prelude::*;
 #[derive(Component, Debug, Clone, Copy)]
 pub struct Position(pub Point);
 
-impl Position {
-    pub fn new(x: i32, y: i32) -> Self {
-        Self(Point { x, y })
-    }
-}
-
 impl Deref for Position {
     type Target = Point;
 

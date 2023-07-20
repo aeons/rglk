@@ -1,16 +1,19 @@
 use crate::prelude::*;
 
 pub fn monster_ai(
-    mut q_monsters: Query<(&Name, &mut Position, &mut Viewshed), (With<Monster>, Without<Player>)>,
-    q_player: Query<&Position, With<Player>>,
+    mut cmd: Commands,
+    mut q_monsters: Query<(Entity, &mut Position, &mut Viewshed), (With<Monster>, Without<Player>)>,
+    q_player: Query<(Entity, &Position), With<Player>>,
     mut map: ResMut<Map>,
 ) {
-    let player_pos = q_player.single();
+    let (player_entity, player_pos) = q_player.single();
 
-    for (name, mut pos, mut viewshed) in q_monsters.iter_mut() {
+    for (entity, mut pos, mut viewshed) in q_monsters.iter_mut() {
         let distance = DistanceAlg::Pythagoras.distance2d(**pos, **player_pos);
         if distance < 1.5 {
-            info!("{name} shouts insults!");
+            cmd.entity(entity).insert(WantsToMelee {
+                target: player_entity,
+            });
         } else if viewshed.visible_tiles.contains(&player_pos) {
             let idx = map.point2d_to_index(**pos);
             let path = a_star_search(idx, map.point2d_to_index(**player_pos), &*map);
