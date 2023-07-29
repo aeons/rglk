@@ -6,6 +6,8 @@ pub fn monster_ai(
     q_player: Query<(Entity, &Position), With<Player>>,
     mut map: ResMut<Map>,
 ) {
+    debug!("running");
+
     let (player_entity, player_pos) = q_player.single();
 
     for (entity, mut pos, mut viewshed) in q_monsters.iter_mut() {
@@ -14,7 +16,7 @@ pub fn monster_ai(
             cmd.entity(entity).insert(WantsToMelee {
                 target: player_entity,
             });
-        } else if viewshed.visible_tiles.contains(&player_pos) {
+        } else if viewshed.visible_tiles.contains(player_pos) {
             let idx = map.point2d_to_index(**pos);
             let path = a_star_search(idx, map.point2d_to_index(**player_pos), &*map);
 

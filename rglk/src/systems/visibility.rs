@@ -1,6 +1,8 @@
 use crate::prelude::*;
 
 pub fn visibility(mut q: Query<(&Position, &mut Viewshed, Option<&Player>)>, mut map: ResMut<Map>) {
+    debug!("running");
+
     for (pos, mut viewshed, player) in q.iter_mut() {
         if !viewshed.dirty {
             continue;

@@ -13,7 +13,7 @@ pub fn player_movement(
     let input = get_player_input(&keys);
 
     if let PlayerInput::Movement { x, y } = input {
-        run_state.set(RunState::Running);
+        run_state.set(RunState::PlayerTurn);
         let dst = **pos + Point::new(x, y);
 
         for potential_target in map.tile_content[map.point2d_to_index(dst)].iter() {
@@ -29,7 +29,5 @@ pub fn player_movement(
             pos.0 = dst;
             viewshed.dirty = true;
         }
-    } else {
-        run_state.set(RunState::Paused);
     }
 }

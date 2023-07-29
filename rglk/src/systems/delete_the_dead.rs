@@ -1,8 +1,9 @@
 use crate::prelude::*;
 
-pub fn delete_the_dead(mut cmd: Commands, query: Query<(Entity, &Name, &CombatStats, Option<&Player>)>) {
-    for (entity,name, stats, player) in query.iter() {
-        info!("{name}: {stats:?}");
+pub fn delete_the_dead(mut cmd: Commands, query: Query<(Entity, &CombatStats, Option<&Player>)>) {
+    debug!("running");
+
+    for (entity, stats, player) in query.iter() {
         if stats.hp < 1 {
             if player.is_some() {
                 info!("You are dead!");

@@ -5,6 +5,8 @@ pub fn melee_combat(
     q_wants_melee: Query<(Entity, &Name, &WantsToMelee, &CombatStats)>,
     mut q_combat_stats: Query<(&Name, &CombatStats, Option<&mut SufferDamage>)>,
 ) {
+    debug!("running");
+
     for (entity, name, wants_melee, stats) in q_wants_melee.iter() {
         if stats.hp > 0 {
             if let Ok((target_name, target_stats, suffer_damage)) =

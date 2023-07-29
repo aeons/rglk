@@ -6,8 +6,8 @@ mod monster_ai;
 mod player_movement;
 mod render;
 mod setup;
+mod update_runstate;
 mod visibility;
-mod wait_for_input;
 
 pub use damage::damage;
 pub use delete_the_dead::delete_the_dead;
@@ -17,5 +17,5 @@ pub use monster_ai::monster_ai;
 pub use player_movement::player_movement;
 pub use render::render;
 pub use setup::setup;
+pub use update_runstate::update_runstate;
 pub use visibility::visibility;
-pub use wait_for_input::wait_for_input;

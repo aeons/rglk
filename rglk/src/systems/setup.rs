@@ -1,6 +1,8 @@
 use crate::prelude::*;
 
 pub fn setup(mut cmd: Commands, map: Res<Map>, mut global_rng: ResMut<GlobalRng>) {
+    debug!("running");
+
     cmd.spawn((TerminalBundle::new().with_size([80, 50]), AutoCamera));
 
     let player_pos = map.rooms[0].center();

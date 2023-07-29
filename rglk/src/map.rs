@@ -25,7 +25,7 @@ pub struct Map {
 }
 
 impl Map {
-    pub fn new_rooms_and_corridors(rng: &mut Rng) -> Self {
+    pub fn new_rooms_and_corridors(rng: &Rng) -> Self {
         let mut map = Self {
             tiles: vec![TileType::Wall; MAP_COUNT],
             rooms: Vec::new(),

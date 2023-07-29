@@ -1,6 +1,8 @@
 use crate::prelude::*;
 
 pub fn map_indexing(q: Query<(Entity, &Position, Option<&BlocksTile>)>, mut map: ResMut<Map>) {
+    debug!("running");
+
     map.populate_blocked();
     map.clear_content();
 
